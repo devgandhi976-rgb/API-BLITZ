@@ -127,6 +127,12 @@ class JsonStore {
     return (this.cache.get('sessions') ?? []).find((s) => s.id === id) || null;
   }
 
+  async sessions_getByTokenHash(tokenHash) {
+    return (
+      (this.cache.get('sessions') ?? []).find((s) => s.token_hash === tokenHash) || null
+    );
+  }
+
   async sessions_remove(id) {
     const list = this.cache.get('sessions') ?? [];
     this.cache.set('sessions', list.filter((s) => s.id !== id));
@@ -268,6 +274,14 @@ class PgStore {
 
   async sessions_get(id) {
     const res = await this.pool.query('select * from sessions where id = $1 and expires_at > now()', [id]);
+    return res.rows[0] || null;
+  }
+
+  async sessions_getByTokenHash(tokenHash) {
+    const res = await this.pool.query(
+      'select * from sessions where token_hash = $1 and expires_at > now()',
+      [tokenHash],
+    );
     return res.rows[0] || null;
   }
 

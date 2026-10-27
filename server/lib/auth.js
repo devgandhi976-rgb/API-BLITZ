@@ -39,25 +39,15 @@ export async function createSession(userId) {
 export async function destroySession(token) {
   if (!token) return;
   const store = await getStore();
-  const session = await store.sessions_get(await sessionIdForToken(token));
+  const session = await store.sessions_getByTokenHash(sha256(token));
   if (session) await store.sessions_remove(session.id);
 }
 
-async function sessionIdForToken(token) {
-  const store = await getStore();
-  // sessions are keyed by token hash; look it up directly through the driver
-  if (store.kind === 'json') {
-    const list = await store.sessions_get ? null : null;
-    return null;
-  }
-  return null;
-}
-
-/** Resolve the current user from a signed session token. */
+/** Resolve the current user from a session cookie token. */
 export async function userFromToken(token) {
   if (!token) return null;
   const store = await getStore();
-  const session = await store.sessions_getByTokenHash?.(sha256(token));
+  const session = await store.sessions_getByTokenHash(sha256(token));
   if (!session) return null;
   return store.users_byId(session.user_id);
 }
